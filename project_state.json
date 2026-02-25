@@ -1,0 +1,138 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 3,
+  "summary": "NEPSE Short-Swing Trading Dashboard — a full-stack single-page React + TypeScript trading command center for Nepal Stock Exchange short-swing traders. Features Bloomberg-style dark terminal UI with 11 sections: live Nepal clock + market status, risk alert banner, operational checklist gate, 12-signal catalyst engine, 8-playbook trade idea builder with position calculator, active trade log, journal metrics, behavioral bias audit, quick links panel, weekly review module, and portfolio allocation gauge. All data persists in localStorage with R-based position sizing logic and NEPSE-specific rules enforced throughout.",
+  "architectural_notes": [
+    "Stack: React + TypeScript, Tailwind CSS, Recharts for charts, Zustand/Context for state",
+    "All data persists in localStorage — no backend required for MVP",
+    "Export/Import data as JSON via Settings panel",
+    "NEPSE market hours: Sunday–Thursday 11:00–15:00 Nepal Standard Time (UTC+5:45)",
+    "Position sizing: Math.floor((accountEquity * riskPct) / (entryPrice - stopPrice)); liquidity cap at 10% of 20d avg turnover; warn if days-to-exit > 3",
+    "Trading fee: 0.6% round-trip (configurable); applied to all P&L calculations",
+    "Daily loss limit: -2R locks Trade Ideas section",
+    "Checklist gate: Trade Ideas blurred until all 7 checklist items complete",
+    "Bias audit gate: soft-lock on trade calculator until daily bias audit completed"
+  ],
+  "known_issues": [],
+  "isFixRequest": false,
+  "imageRequirements": "## Required Images\n- Dark terminal background texture with subtle horizontal scanline pattern on deep navy-black (#0A0E1A), seamless tileable (scanline-bg.dim_800x600.png)",
+  "existing_features": [
+    {
+      "id": "feature-implement-global-state-management-using-react-context-storing-accountequity-npr-dailypnl-opentrades-array-closedtrades-array-signalcards-array-12-signals-checkliststate-7-items-biasauditanswers-weeklyreviewdata-quicklinkslastchecked-and-settings-feepercent-default-0-006-riskpercent-options-0-5-1-0-persist-all-state-to-localstorage-on-every-change-and-rehydrate-on-app-load-provide-json-export-and-import-functionality",
+      "title": "Implement global state management using React Context storing: accountEquity (NPR), dailyPnL, openTrades array, closedTrades array, signalCards array (12 signals), checklistState (7 items), biasAuditAnswers, weeklyReviewData, quickLinksLastChecked, and settings (feePercent default 0.006, riskPercent options 0.5%/1.0%). Persist all state to localStorage on every change and rehydrate on app load. Provide JSON export and import functionality.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-a-fixed-top-navbar-containing-1-a-nepse-desk-logo-title-on-the-left-2-a-live-nepalclock-component-showing-nepal-standard-time-utc-5-45-updating-every-second-3-a-marketstatus-indicator-showing-market-open-or-market-closed-nepse-is-open-sunday-thursday-11-00-15-00-nst-4-an-account-r-input-field-where-the-user-sets-their-account-equity-in-npr-5-a-max-loss-today-2r-npr-badge-that-turns-red-and-locks-the-trade-ideas-section-when-daily-p-l-reaches-2r-implement-the-nepse-market-hours-logic-exactly-as-specified-utc-offset-5h-45m-weekdays-sun-0-through-thu-4-hours-11-00-15-00",
+      "title": "Build a fixed top navbar containing: (1) a '🇳🇵 NEPSE DESK' logo/title on the left; (2) a live NepalClock component showing Nepal Standard Time (UTC+5:45) updating every second; (3) a MarketStatus indicator showing 'MARKET: OPEN' or 'MARKET: CLOSED' — NEPSE is open Sunday–Thursday 11:00–15:00 NST; (4) an 'Account R' input field where the user sets their account equity in NPR; (5) a 'Max Loss Today: 2R = NPR ___' badge that turns red and locks the trade ideas section when daily P&L reaches -2R. Implement the NEPSE market hours logic exactly as specified (UTC offset = +5h 45m, weekdays Sun=0 through Thu=4, hours 11:00–15:00).",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-a-riskalertbanner-component-displayed-below-the-navbar-always-visible-it-renders-colored-pill-badge-alerts-edis-due-today-red-pulsing-user-manually-flagged-closeout-risk-red-position-flagged-near-closeout-lock-in-supply-shock-orange-unlock-qty-5-avg-daily-volume-within-14-days-promoter-overhang-orange-promoter-sale-500-000-shares-margin-buffer-low-yellow-buffer-approaching-20-volatility-regime-blue-index-moved-2-yesterday-or-circuit-halt-in-last-5-days-all-clear-green-no-active-alerts-if-any-red-alert-is-active-the-banner-pulses-with-a-css-animation-and-a-modal-popup-appears-on-page-load-asking-the-user-to-confirm-they-ve-handled-edis",
+      "title": "Build a RiskAlertBanner component displayed below the navbar, always visible. It renders colored pill/badge alerts: 🔴 EDIS DUE TODAY (red pulsing, user-manually-flagged), 🔴 CLOSEOUT RISK (red, position flagged near closeout), 🟠 LOCK-IN SUPPLY SHOCK (orange, unlock qty ≥ 5× avg daily volume within 14 days), 🟠 PROMOTER OVERHANG (orange, promoter sale > 500,000 shares), 🟡 MARGIN BUFFER LOW (yellow, buffer approaching 20%), 🔵 VOLATILITY REGIME (blue, index moved ≥2% yesterday or circuit halt in last 5 days), ✅ ALL CLEAR (green, no active alerts). If any RED alert is active, the banner pulses with a CSS animation and a modal popup appears on page load asking the user to confirm they've handled EDIS.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-a-collapsible-operationalchecklist-card-open-by-default-with-7-checkboxes-1-edis-completed-for-all-t-1-sell-trades-2-no-delivery-period-check-done-for-holdings-near-book-close-3-margin-buffer-20-with-a-fill-in-field-for-the-percentage-4-max-daily-loss-limit-confirmed-showing-2r-in-npr-5-position-size-caps-reviewed-10-of-avg-turnover-6-pre-defined-entry-stop-size-for-all-planned-trades-7-bias-self-check-completed-display-a-progress-bar-showing-completion-0-7-to-7-7-the-trade-ideas-section-section-5-must-be-blurred-with-a-lock-overlay-and-a-message-complete-your-operational-checklist-first-until-all-7-items-are-checked",
+      "title": "Build a collapsible OperationalChecklist card (open by default) with 7 checkboxes: (1) EDIS completed for all T+1 sell trades, (2) No-delivery period check done for holdings near book-close, (3) Margin buffer > 20% with a fill-in field for the percentage, (4) Max daily loss limit confirmed showing 2R in NPR, (5) Position size caps reviewed (≤10% of avg turnover), (6) Pre-defined entry + stop + size for all planned trades, (7) Bias self-check completed. Display a progress bar showing completion (0/7 to 7/7). The Trade Ideas section (Section 5) must be blurred with a lock overlay and a message 'Complete your operational checklist first' until all 7 items are checked.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-the-12-signal-catalyst-engine-section-with-a-signalcard-component-reused-for-all-12-signals-each-card-shows-signal-number-name-status-toggle-active-watch-clear-last-updated-timestamp-and-a-add-data-button-that-opens-an-inline-mini-form-to-log-ticker-date-qty-and-notes-the-12-signals-are-s1-sebon-approval-s2-ipo-pipeline-update-s3-new-listing-s4-book-close-7-days-s5-price-adjustment-s6-lock-in-supply-shock-s7-promoter-overhang-s8-auction-tender-7d-s9-earnings-surprise-s10-edis-reminder-s11-momentum-liquidity-s12-volatility-regime-cards-are-sorted-red-first-then-orange-yellow-then-clear-display-a-signal-summary-bar-at-the-top-of-the-section-showing-counts-by-category-risk-opportunity-neutral-all-signal-data-persists-to-localstorage",
+      "title": "Build the 12-Signal Catalyst Engine section with a SignalCard component reused for all 12 signals. Each card shows: signal number + name, status toggle (🔴 ACTIVE / 🟡 WATCH / ⚫ CLEAR), last updated timestamp, and a '+ Add Data' button that opens an inline mini-form to log ticker, date, qty, and notes. The 12 signals are: [S1] SEBON Approval, [S2] IPO Pipeline Update, [S3] New Listing, [S4] Book-Close ≤7 Days, [S5] Price Adjustment, [S6] Lock-in Supply Shock, [S7] Promoter Overhang, [S8] Auction/Tender ≤7d, [S9] Earnings Surprise, [S10] EDIS Reminder, [S11] Momentum/Liquidity, [S12] Volatility Regime. Cards are sorted: RED first, then ORANGE/YELLOW, then CLEAR. Display a Signal Summary Bar at the top of the section showing counts by category (Risk / Opportunity / Neutral). All signal data persists to localStorage.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-the-trade-idea-builder-section-with-8-playbookcard-components-gated-behind-the-checklist-completion-state-blurred-if-checklist-100-each-playbookcard-shows-strategy-name-timeframe-badge-source-badge-one-line-rationale-entry-rule-exit-rule-and-an-embedded-tradecalculator-the-8-playbooks-are-1-ipo-first-trade-newly-listed-momentum-scalp-amber-event-driven-1-5-sessions-2-post-price-adjustment-momentum-amber-event-driven-3-15-sessions-3-book-close-last-trading-day-amber-event-driven-2-7-sessions-4-lock-in-expiry-absorption-trade-amber-event-driven-3-20-sessions-5-promoter-overhang-fade-amber-event-driven-5-30-sessions-6-earnings-surprise-trade-amber-event-driven-2-20-sessions-7-liquidity-breakout-in-top-turnover-names-blue-momentum-1-10-sessions-8-vwap-mean-reversion-on-liquid-names-purple-intraday-only-color-code-cards-amber-event-driven-blue-momentum-purple-intraday",
+      "title": "Build the Trade Idea Builder section with 8 PlaybookCard components, gated behind the checklist completion state (blurred if checklist < 100%). Each PlaybookCard shows: strategy name, timeframe badge, source badge, one-line rationale, entry rule, exit rule, and an embedded TradeCalculator. The 8 playbooks are: (1) IPO First-Trade / Newly Listed Momentum Scalp [amber, event-driven, 1–5 sessions], (2) Post Price-Adjustment Momentum [amber, event-driven, 3–15 sessions], (3) Book-Close Last Trading Day [amber, event-driven, 2–7 sessions], (4) Lock-in Expiry Absorption Trade [amber, event-driven, 3–20 sessions], (5) Promoter Overhang Fade [amber, event-driven, 5–30 sessions], (6) Earnings Surprise Trade [amber, event-driven, 2–20 sessions], (7) Liquidity Breakout in Top-Turnover Names [blue, momentum, 1–10 sessions], (8) VWAP Mean-Reversion on Liquid Names [purple, intraday only]. Color-code cards: amber = event-driven, blue = momentum, purple = intraday.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-the-tradecalculator-component-embedded-within-each-playbookcard-input-fields-ticker-entry-price-npr-stop-price-npr-account-equity-auto-populated-from-navbar-risk-dropdown-0-5-or-1-0-and-avg-daily-turnover-20d-npr-implement-the-exact-position-sizing-logic-positionshares-math-floor-accountequity-riskpercent-entryprice-stopprice-liquiditycap-avgdailyturnover20d-0-10-liquiditycapshares-math-floor-liquiditycap-entryprice-effectiveshares-math-min-positionshares-liquiditycapshares-breakevenpct-configurable-fee-default-0-6-rvalue-accountequity-riskpercent-daystoexit-effectiveshares-entryprice-avgdailyturnover20d-display-outputs-position-size-shares-max-position-value-npr-liquidity-cap-npr-effective-size-shares-breakeven-move-needed-show-liquidity-warning-if-daystoexit-3-if-effectiveshares-0-display-stop-too-tight-or-position-too-large-for-account-size-include-a-add-to-trade-log-button",
+      "title": "Build the TradeCalculator component embedded within each PlaybookCard. Input fields: Ticker, Entry Price (NPR), Stop Price (NPR), Account Equity (auto-populated from navbar), Risk % (dropdown: 0.5% or 1.0%), and Avg Daily Turnover 20d (NPR). Implement the exact position sizing logic: positionShares = Math.floor((accountEquity * riskPercent) / (entryPrice - stopPrice)); liquidityCap = avgDailyTurnover20d * 0.10; liquidityCapShares = Math.floor(liquidityCap / entryPrice); effectiveShares = Math.min(positionShares, liquidityCapShares); breakevenPct = configurable fee (default 0.6%); rValue = accountEquity * riskPercent; daysToExit = (effectiveShares * entryPrice) / avgDailyTurnover20d. Display outputs: Position Size (shares), Max Position Value (NPR), Liquidity Cap (NPR), Effective Size (shares), Breakeven Move needed (%). Show ⚠️ liquidity warning if daysToExit > 3. If effectiveShares = 0, display 'Stop too tight or position too large for account size'. Include a '💾 Add to Trade Log' button.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-the-active-trade-log-section-as-a-crud-table-with-columns-ticker-playbook-entry-price-stop-price-size-shares-entry-date-current-price-manual-input-for-p-l-calc-current-p-l-npr-current-p-l-r-multiple-days-held-auto-incrementing-from-entry-date-status-open-closed-stopped-out-target-hit-actions-edit-close-trade-flag-edis-rows-turn-green-if-p-l-0-and-red-if-p-l-0-when-closing-a-trade-the-user-enters-an-exit-price-and-the-app-computes-net-p-l-after-deducting-the-configurable-fee-default-0-6-sort-the-table-by-p-l-ascending-worst-first-display-a-summary-bar-below-open-trades-count-today-s-realized-p-l-npr-and-r-max-daily-loss-remaining-r-and-daily-loss-limit-usage-percentage-lock-the-trade-ideas-section-if-daily-p-l-reaches-2r-with-message-daily-loss-limit-reached-market-is-closed-for-you-today-review-journal",
+      "title": "Build the Active Trade Log section as a CRUD table with columns: Ticker, Playbook, Entry Price, Stop Price, Size (shares), Entry Date, Current Price (manual input for P&L calc), Current P&L (NPR), Current P&L (R-multiple), Days Held (auto-incrementing from entry date), Status (OPEN / CLOSED / STOPPED OUT / TARGET HIT), Actions (Edit, Close Trade, Flag EDIS). Rows turn green if P&L > 0 and red if P&L < 0. When closing a trade, the user enters an exit price and the app computes net P&L after deducting the configurable fee (default 0.6%). Sort the table by P&L ascending (worst first). Display a summary bar below: Open Trades count, Today's Realized P&L (NPR and R), Max Daily Loss Remaining (R), and Daily Loss Limit usage percentage. Lock the Trade Ideas section if daily P&L reaches -2R with message: 'Daily loss limit reached. Market is closed for you today. Review journal.'",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-the-journal-metrics-dashboard-section-with-a-3-column-grid-of-metric-cards-auto-computing-from-trade-log-data-1-portfolio-turnover-2-avg-holding-days-3-net-p-l-per-trade-after-fees-4-chase-rate-of-trades-entered-after-3-consecutive-green-days-5-plan-adherence-score-0-5-manual-input-6-edis-delay-days-avg-manual-input-7-win-rate-8-avg-win-avg-loss-ratio-9-max-drawdown-this-month-10-closeout-incidents-month-manual-11-mistimed-corporate-action-trades-manual-12-forced-sell-events-manual-below-the-metric-cards-display-a-p-l-equity-curve-chart-using-recharts-line-chart-of-cumulative-p-l-in-npr-over-time-with-r-multiple-on-a-secondary-y-axis-below-the-chart-display-a-playbook-performance-table-with-columns-playbook-name-trades-win-rate-avg-r-best-trade-worst-trade",
+      "title": "Build the Journal Metrics Dashboard section with a 3-column grid of metric cards auto-computing from trade log data: (1) Portfolio Turnover, (2) Avg Holding Days, (3) Net P&L per Trade after fees, (4) Chase Rate (% of trades entered after 3 consecutive green days), (5) Plan Adherence Score 0–5 (manual input), (6) EDIS Delay Days Avg (manual input), (7) Win Rate, (8) Avg Win / Avg Loss Ratio, (9) Max Drawdown This Month, (10) Closeout Incidents/Month (manual), (11) Mistimed Corporate Action Trades (manual), (12) Forced Sell Events (manual). Below the metric cards, display a P&L Equity Curve chart using Recharts (line chart of cumulative P&L in NPR over time, with R-multiple on a secondary Y-axis). Below the chart, display a Playbook Performance Table with columns: Playbook Name, Trades, Win Rate, Avg R, Best Trade, Worst Trade.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-the-behavioral-bias-daily-audit-section-with-5-yes-no-unsure-toggle-questions-q1-chasing-a-stock-up-3-consecutive-days-herding-trap-warning-if-yes-q2-holding-a-loser-past-defined-stop-loss-aversion-disposition-effect-warning-if-yes-q3-overconfident-after-3-consecutive-wins-overconfidence-bias-warning-with-50-size-reduction-instruction-if-yes-q4-pre-defined-entry-stop-size-before-market-open-do-not-trade-today-block-if-no-q5-chase-rate-above-15-this-month-reduce-frequency-warning-if-yes-display-a-plan-adherence-score-slider-0-5-auto-saved-per-day-show-a-bias-status-low-risk-or-bias-status-elevated-chip-at-the-top-based-on-answers-the-trade-calculator-should-apply-a-soft-lock-until-the-daily-bias-audit-is-completed",
+      "title": "Build the Behavioral Bias Daily Audit section with 5 Yes/No/Unsure toggle questions: (Q1) chasing a stock up 3+ consecutive days → HERDING TRAP warning if YES; (Q2) holding a loser past defined stop → LOSS AVERSION + DISPOSITION EFFECT warning if YES; (Q3) overconfident after 3+ consecutive wins → OVERCONFIDENCE BIAS warning with 50% size reduction instruction if YES; (Q4) pre-defined entry/stop/size before market open → 'DO NOT TRADE TODAY' block if NO; (Q5) chase rate above 15% this month → reduce frequency warning if YES. Display a Plan Adherence Score slider (0–5) auto-saved per day. Show a 'BIAS STATUS: LOW RISK ✅' or 'BIAS STATUS: ELEVATED ⚠️' chip at the top based on answers. The Trade Calculator should apply a soft-lock until the daily bias audit is completed.",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-the-quick-links-panel-as-a-sidebar-or-bottom-bar-with-two-groups-of-links-opening-in-new-tabs-official-sources-sebon-ipo-approved-sebon-gov-np-cdsc-lock-in-notices-cdsc-com-np-cdsc-settlement-procedure-cdsc-edis-directive-aggregators-merolagani-announcements-merolagani-quarterly-reports-merolagani-top-turnovers-sharesansar-share-listed-sharesansar-dividend-bonus-rights-sharesansar-top-turnovers-each-link-shows-a-last-checked-timestamp-that-the-user-can-update-manually-by-clicking-a-button-next-to-it-timestamps-persist-to-localstorage",
+      "title": "Build the Quick Links Panel as a sidebar or bottom bar with two groups of links opening in new tabs. Official Sources: SEBON IPO Approved (sebon.gov.np), CDSC Lock-in Notices (cdsc.com.np), CDSC Settlement Procedure, CDSC EDIS Directive. Aggregators: Merolagani Announcements, Merolagani Quarterly Reports, Merolagani Top Turnovers, Sharesansar Share Listed, Sharesansar Dividend/Bonus/Rights, Sharesansar Top Turnovers. Each link shows a 'Last Checked' timestamp that the user can update manually by clicking a ✓ button next to it. Timestamps persist to localStorage.",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-the-weekly-review-module-that-appears-automatically-on-sundays-nepal-time-or-can-be-triggered-manually-via-a-button-it-auto-generates-a-summary-from-trade-log-and-journal-data-showing-hit-rate-target-50-avg-win-avg-loss-target-1-5-max-drawdown-npr-and-r-rule-adherence-target-80-edis-errors-this-week-target-0-chase-rate-target-15-plan-adherence-avg-score-out-of-5-target-4-best-and-worst-playbook-this-week-with-avg-r-display-auto-generated-text-recommendations-based-on-these-rule-based-conditions-win-rate-40-reduce-to-1-trade-day-chase-rate-20-24-hour-waiting-rule-edis-errors-0-no-sell-without-edis-slot-rule-plan-adherence-3-paper-trade-only-all-metrics-good-scale-r-by-0-1-include-a-export-weekly-report-as-pdf-button-use-window-print-or-a-print-friendly-css-class-for-the-pdf-export",
+      "title": "Build the Weekly Review Module that appears automatically on Sundays (Nepal time) or can be triggered manually via a button. It auto-generates a summary from trade log and journal data showing: Hit Rate (target >50%), Avg Win/Avg Loss (target >1.5), Max Drawdown (NPR and R), Rule Adherence % (target >80%), EDIS Errors This Week (target 0), Chase Rate % (target <15%), Plan Adherence Avg Score out of 5 (target ≥4), Best and Worst Playbook this week with avg R. Display auto-generated text recommendations based on these rule-based conditions: win rate < 40% → reduce to 1 trade/day; chase rate > 20% → 24-hour waiting rule; EDIS errors > 0 → no-sell-without-EDIS-slot rule; plan adherence < 3 → paper trade only; all metrics good → scale R by 0.1%. Include a '📥 Export Weekly Report as PDF' button (use window.print() or a print-friendly CSS class for the PDF export).",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-the-portfolio-allocation-gauge-section-with-a-recharts-donut-chart-showing-current-allocation-by-playbook-category-vs-targets-target-50-event-swing-30-momentum-20-ipo-new-listing-compute-current-percentages-from-open-trades-tagged-by-playbook-category-display-a-rebalancing-warning-if-any-category-deviates-significantly-from-its-target-e-g-you-are-overweight-momentum-42-reduce-momentum-trades-until-next-event-driven-setup",
+      "title": "Build the Portfolio Allocation Gauge section with a Recharts donut chart showing current allocation by playbook category vs targets: Target 50% Event/Swing | 30% Momentum | 20% IPO/New Listing. Compute current percentages from open trades tagged by playbook category. Display a rebalancing warning if any category deviates significantly from its target (e.g., 'You are overweight Momentum (42%). Reduce momentum trades until next event-driven setup.').",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-apply-the-full-bloomberg-meets-himalayan-night-sky-dark-terminal-visual-theme-consistently-across-the-entire-dashboard-colors-background-0a0e1a-surface-cards-111827-with-1e293b-borders-primary-accent-f59e0b-amber-gold-success-10b981-danger-ef4444-muted-text-6b7280-highlight-3b82f6-typography-jetbrains-mono-or-ibm-plex-mono-for-display-headers-and-all-numeric-data-fields-inter-for-readable-body-paragraphs-layout-full-width-dashboard-3-column-grid-on-desktop-1280px-2-column-on-tablet-768-1279px-single-column-on-mobile-768px-add-a-thin-amber-f59e0b-top-border-across-the-entire-page-add-a-subtle-scanline-texture-overlay-on-the-background-apply-micro-animations-pulse-on-new-alerts-slide-in-on-cards-when-nepse-market-is-closed-dim-the-entire-dashboard-to-70-opacity-and-show-a-market-closed-planning-mode-banner-configure-all-custom-colors-and-fonts-in-tailwind-config-js",
+      "title": "Apply the full Bloomberg-meets-Himalayan-night-sky dark terminal visual theme consistently across the entire dashboard. Colors: background #0A0E1A, surface cards #111827 with #1E293B borders, primary accent #F59E0B (amber/gold), success #10B981, danger #EF4444, muted text #6B7280, highlight #3B82F6. Typography: JetBrains Mono or IBM Plex Mono for display/headers and all numeric/data fields, Inter for readable body paragraphs. Layout: full-width dashboard, 3-column grid on desktop (≥1280px), 2-column on tablet (768–1279px), single column on mobile (<768px). Add a thin amber (#F59E0B) top border across the entire page. Add a subtle scanline texture overlay on the background. Apply micro-animations: pulse on new alerts, slide-in on cards. When NEPSE market is closed, dim the entire dashboard to 70% opacity and show a 'MARKET CLOSED — Planning Mode' banner. Configure all custom colors and fonts in tailwind.config.js.",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [],
+  "gameProjectType": "none",
+  "projectName": "NEPSE Short-Swing Trading Dashboard",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

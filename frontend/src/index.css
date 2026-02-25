@@ -1,0 +1,152 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.375rem;
+
+    /* Terminal dark theme - Bloomberg meets Himalayan night sky */
+    --background: 0.12 0.015 240;
+    --foreground: 0.88 0.01 220;
+    --card: 0.16 0.012 235;
+    --card-foreground: 0.88 0.01 220;
+    --popover: 0.16 0.012 235;
+    --popover-foreground: 0.88 0.01 220;
+    --primary: 0.72 0.16 75;
+    --primary-foreground: 0.10 0.01 240;
+    --secondary: 0.20 0.012 235;
+    --secondary-foreground: 0.88 0.01 220;
+    --muted: 0.20 0.012 235;
+    --muted-foreground: 0.50 0.01 220;
+    --accent: 0.20 0.012 235;
+    --accent-foreground: 0.88 0.01 220;
+    --destructive: 0.55 0.22 25;
+    --destructive-foreground: 0.98 0 0;
+    --border: 0.22 0.015 235;
+    --input: 0.22 0.015 235;
+    --ring: 0.72 0.16 75;
+    --chart-1: 0.72 0.16 75;
+    --chart-2: 0.55 0.18 250;
+    --chart-3: 0.55 0.18 290;
+    --chart-4: 0.60 0.20 145;
+    --chart-5: 0.55 0.22 25;
+    --sidebar: 0.14 0.012 235;
+    --sidebar-foreground: 0.88 0.01 220;
+    --sidebar-primary: 0.72 0.16 75;
+    --sidebar-primary-foreground: 0.10 0.01 240;
+    --sidebar-accent: 0.20 0.012 235;
+    --sidebar-accent-foreground: 0.88 0.01 220;
+    --sidebar-border: 0.22 0.015 235;
+    --sidebar-ring: 0.72 0.16 75;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+    background-color: #0A0E1A;
+    /* Amber top border */
+    border-top: 2px solid #F59E0B;
+    /* Scanline texture overlay */
+    background-image: url('/assets/generated/scanline-bg.dim_800x600.png');
+    background-repeat: repeat;
+    background-size: 800px 600px;
+    background-attachment: fixed;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0A0E1A;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1E293B;
+    border-radius: 2px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #F59E0B;
+  }
+}
+
+@layer components {
+  .terminal-card {
+    @apply bg-terminal-surface border border-terminal-border rounded;
+  }
+
+  .terminal-input {
+    @apply bg-terminal-bg border border-terminal-border rounded text-terminal-fg font-mono text-sm px-2 py-1 focus:outline-none focus:border-terminal-amber transition-colors;
+  }
+
+  .section-title {
+    @apply font-display text-terminal-amber text-sm font-bold uppercase tracking-widest;
+  }
+}
+
+@layer utilities {
+  /* Slide-in animation for cards */
+  .slide-in {
+    animation: slideIn 0.2s ease-out;
+  }
+
+  /* Pulse slow for risk banners */
+  .animate-pulse-slow {
+    animation: pulseSlow 2s ease-in-out infinite;
+  }
+}
+
+/* Keyframe animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseSlow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Print styles for weekly review PDF export */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+    border-top: none !important;
+    background-image: none !important;
+  }
+
+  nav,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  #weekly-review-print {
+    background: white !important;
+    color: black !important;
+    border: 1px solid #ccc !important;
+  }
+
+  #weekly-review-print * {
+    color: black !important;
+    border-color: #ccc !important;
+    background: transparent !important;
+  }
+}

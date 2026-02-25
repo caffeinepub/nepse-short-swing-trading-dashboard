@@ -1,0 +1,133 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-25T09:36:34.357Z",
+  "summary": "The diff implements most of the 14 requirements for the NEPSE Short-Swing Trading Dashboard. All major sections (Navbar, RiskAlertBanner, OperationalChecklist, SignalCatalystEngine, TradeIdeaBuilder, ActiveTradeLog, JournalMetrics, BiasAudit, QuickLinksPanel, WeeklyReview, PortfolioAllocationGauge, MarketClosedOverlay) are present as React components. Global state via TradingContext, localStorage persistence, and Recharts charts are included. However, several specific requirements cannot be confirmed from the truncated/omitted diff files, and a few details appear missing or uncertain.",
+  "missing_requirements": [
+    {
+      "requirement": "The scanline background texture image (scanline-bg.dim_800x600.png) must be present as an asset and applied as a scanline texture overlay on the background",
+      "reason": "The image asset is listed as required in the build request. No evidence of this image file or its CSS application appears in any of the visible diff files.",
+      "evidence": []
+    },
+    {
+      "requirement": "REQ-14: Dashboard dims to 70% opacity and shows a 'MARKET CLOSED — Planning Mode' banner when NEPSE market is closed",
+      "reason": "MarketClosedOverlay.tsx renders a banner but implements it as a non-interactive top bar (pointer-events-none) without dimming the entire dashboard to 70% opacity. The 70% opacity dim on the full dashboard content is not evidenced.",
+      "evidence": [
+        "frontend/src/components/MarketClosedOverlay.tsx"
+      ]
+    },
+    {
+      "id": "REQ-12",
+      "requirement": "Weekly Review Module auto-displays on Sundays in Nepal time",
+      "reason": "WeeklyReview component is imported in App.tsx but its implementation file was omitted from the diff. The Sunday auto-display logic cannot be verified.",
+      "evidence": [
+        "frontend/src/App.tsx"
+      ]
+    },
+    {
+      "id": "REQ-12",
+      "requirement": "PDF export button triggers a printable view using window.print() or print-friendly CSS class",
+      "reason": "WeeklyReview implementation file was omitted; the PDF export functionality cannot be confirmed.",
+      "evidence": []
+    },
+    {
+      "id": "REQ-12",
+      "requirement": "Recommendation text never uses the words 'feel' or 'looks good' and always cites a specific rule or metric",
+      "reason": "WeeklyReview implementation file was omitted; compliance with the language constraint cannot be verified.",
+      "evidence": []
+    },
+    {
+      "id": "REQ-9",
+      "requirement": "Chase Rate metric card should compute from trade log data (% of trades entered after 3 consecutive green days), not reuse planAdherenceScore",
+      "reason": "In JournalMetrics.tsx, the Chase Rate card displays manualMetrics.planAdherenceScore which is the same value used for Plan Adherence Score. Chase rate is a separate computed metric.",
+      "evidence": [
+        "frontend/src/components/JournalMetrics.tsx"
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "requirement": "Signal Summary Bar at the top of the Signal Catalyst Engine section showing counts by category (Risk / Opportunity / Neutral)",
+      "reason": "SignalCatalystEngine component implementation file was omitted from the diff; the Signal Summary Bar cannot be confirmed.",
+      "evidence": []
+    },
+    {
+      "id": "REQ-10",
+      "requirement": "Trade Calculator should apply a soft-lock until the daily bias audit is completed",
+      "reason": "TradeCalculator implementation file was omitted from the diff; the soft-lock behavior tied to bias audit completion cannot be confirmed.",
+      "evidence": []
+    },
+    {
+      "id": "REQ-14",
+      "requirement": "Configure all custom colors and fonts in tailwind.config.js",
+      "reason": "The tailwind.config.js file was not included in the diff. Custom color and font configuration cannot be confirmed.",
+      "evidence": []
+    },
+    {
+      "id": "REQ-14",
+      "requirement": "JetBrains Mono or IBM Plex Mono font loaded and applied to all numeric/data fields and headers",
+      "reason": "No font import files (index.html, CSS, or font config) appear in the diff to confirm font loading.",
+      "evidence": []
+    }
+  ],
+  "hallucinated_features": [
+    {
+      "description": "Chase Rate metric card in JournalMetrics reuses planAdherenceScore value instead of a distinct chase rate computation",
+      "reason": "REQ-9 specifies Chase Rate as metric #4 (% of trades entered after 3 consecutive green days) and Plan Adherence Score as metric #5 (manual input 0-5). These are different metrics, but the implementation uses the same manualMetrics.planAdherenceScore value for the Chase Rate card.",
+      "evidence": [
+        "frontend/src/components/JournalMetrics.tsx"
+      ]
+    },
+    {
+      "description": "MarketClosedOverlay uses a narrow pointer-events-none top bar rather than dimming the full dashboard to 70% opacity",
+      "reason": "REQ-14 specifies dimming the entire dashboard to 70% opacity when market is closed. The implementation uses a thin banner strip with pointer-events-none rather than an opacity overlay on the main content area.",
+      "evidence": [
+        "frontend/src/components/MarketClosedOverlay.tsx"
+      ]
+    }
+  ],
+  "confidence": 0.52,
+  "changed_files": [
+    "all_files_summary.json",
+    "backend/main.mo",
+    "frontend-file-summaries.txt",
+    "frontend/index.css",
+    "frontend/index.html",
+    "frontend/src/App.tsx",
+    "frontend/src/components/ActiveTradeLog.tsx",
+    "frontend/src/components/BiasAudit.tsx",
+    "frontend/src/components/CloseTradeDialog.tsx",
+    "frontend/src/components/EdisConfirmationModal.tsx",
+    "frontend/src/components/JournalMetrics.tsx",
+    "frontend/src/components/MarketClosedOverlay.tsx",
+    "frontend/src/components/MarketStatus.tsx",
+    "frontend/src/components/MetricCard.tsx",
+    "frontend/src/components/Navbar.tsx",
+    "frontend/src/components/NepalClock.tsx",
+    "frontend/src/components/OperationalChecklist.tsx",
+    "frontend/src/components/PLEquityCurve.tsx",
+    "frontend/src/components/PlaybookCard.tsx",
+    "frontend/src/components/PlaybookPerformanceTable.tsx",
+    "frontend/src/components/PortfolioAllocationGauge.tsx",
+    "frontend/src/components/QuickLinksPanel.tsx",
+    "frontend/src/components/RiskAlertBanner.tsx",
+    "frontend/src/components/SignalCard.tsx",
+    "frontend/src/components/SignalCatalystEngine.tsx",
+    "frontend/src/components/SignalSummaryBar.tsx",
+    "frontend/src/components/TradeCalculator.tsx",
+    "frontend/src/components/TradeIdeaBuilder.tsx",
+    "frontend/src/components/WeeklyReview.tsx",
+    "frontend/src/contexts/TradingContext.tsx",
+    "frontend/src/hooks/useActor.ts",
+    "frontend/src/hooks/useInternetIdentity.ts",
+    "frontend/src/index.css",
+    "frontend/src/main.tsx",
+    "frontend/src/types/trading.ts",
+    "frontend/src/utils/allocation.ts",
+    "frontend/src/utils/metrics.ts",
+    "frontend/src/utils/nepalTime.ts",
+    "frontend/src/utils/positionSizing.ts",
+    "frontend/src/utils/weeklyRecommendations.ts",
+    "frontend/tailwind.config.js",
+    "project_state.json"
+  ]
+}

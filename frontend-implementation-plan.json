@@ -1,0 +1,373 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "NEPSE Short-Swing Trading Dashboard Frontend",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "summary": "Implement global state management using React Context storing all trading state with localStorage persistence and JSON export/import functionality",
+      "acceptanceCriteria": [
+        "All state survives page reload via localStorage",
+        "JSON export downloads a valid file with all state",
+        "JSON import replaces current state from a valid file",
+        "accountEquity entered once in the navbar is accessible throughout the app"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/contexts/TradingContext.tsx",
+          "operation": "create",
+          "description": "Create React Context provider that manages global state including accountEquity, dailyPnL, openTrades, closedTrades, signalCards (12 signals), checklistState (7 items), biasAuditAnswers, weeklyReviewData, quickLinksLastChecked, and settings. Implement localStorage persistence on every state change with automatic rehydration on app load. Provide JSON export and import methods accessible to components."
+        },
+        {
+          "path": "frontend/src/hooks/useTradingState.ts",
+          "operation": "create",
+          "description": "Create custom hook that consumes TradingContext and provides type-safe access to all state fields and update methods. Export individual state selectors for performance optimization."
+        },
+        {
+          "path": "frontend/src/types/trading.ts",
+          "operation": "create",
+          "description": "Define TypeScript interfaces for all state structures: TradingState, Trade, Signal, ChecklistItem, BiasAuditAnswers, WeeklyReview, QuickLink, Settings, and related types."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Build a fixed top navbar with NEPSE branding, live Nepal clock, market status indicator, account equity input, and max daily loss badge with -2R locking logic",
+      "acceptanceCriteria": [
+        "Nepal clock updates every second and displays correct NST",
+        "Market status correctly shows OPEN on Sun–Thu between 11:00–15:00 NST and CLOSED otherwise",
+        "Account equity input persists to localStorage",
+        "Max Loss badge displays computed 2R value in NPR and turns red at -2R daily loss"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/Navbar.tsx",
+          "operation": "create",
+          "description": "Create fixed top navbar component with NEPSE DESK logo/title (left), NepalClock component, MarketStatus indicator, Account R input field persisted to TradingContext, and Max Loss Today badge that displays 2R in NPR and turns red when daily P&L reaches -2R. Apply dark terminal styling with amber accents."
+        },
+        {
+          "path": "frontend/src/components/NepalClock.tsx",
+          "operation": "create",
+          "description": "Create component that displays Nepal Standard Time (UTC+5:45) updating every second using setInterval. Format time as HH:MM:SS. Clean up interval on unmount."
+        },
+        {
+          "path": "frontend/src/components/MarketStatus.tsx",
+          "operation": "create",
+          "description": "Create component that checks current Nepal time against NEPSE market hours (Sunday–Thursday 11:00–15:00 NST) and displays 'MARKET: OPEN' or 'MARKET: CLOSED'. Implement exact UTC+5h 45m offset logic with weekday check (Sun=0 through Thu=4)."
+        },
+        {
+          "path": "frontend/src/utils/nepalTime.ts",
+          "operation": "create",
+          "description": "Create utility functions for Nepal time calculations: getNST() returns current Nepal time, isMarketOpen() checks NEPSE hours (Sun–Thu 11:00–15:00 NST), getCurrentDay() returns weekday index. Use UTC offset of +5h 45m exactly."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Build a RiskAlertBanner component with colored pill alerts that pulses on RED alerts and shows modal confirmation for EDIS handling",
+      "acceptanceCriteria": [
+        "All 7 alert types render with correct colors",
+        "Red alerts trigger a CSS pulse animation on the banner",
+        "On page load with an active RED alert, a modal appears requiring confirmation",
+        "ALL CLEAR badge appears only when no other alerts are active",
+        "Alert states persist to localStorage"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/RiskAlertBanner.tsx",
+          "operation": "create",
+          "description": "Create full-width banner component that displays colored pill badges for 7 alert types: EDIS DUE TODAY (red pulsing), CLOSEOUT RISK (red), LOCK-IN SUPPLY SHOCK (orange), PROMOTER OVERHANG (orange), MARGIN BUFFER LOW (yellow), VOLATILITY REGIME (blue), ALL CLEAR (green). Apply CSS pulse animation when any RED alert is active. Trigger modal on page load if RED alert exists. Store alert states in TradingContext."
+        },
+        {
+          "path": "frontend/src/components/EdisConfirmationModal.tsx",
+          "operation": "create",
+          "description": "Create modal dialog that appears on page load when a RED alert is active, requiring user confirmation that they have handled EDIS. Use shadcn/ui Dialog component. Modal dismissal updates state in TradingContext."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Build a collapsible OperationalChecklist card with 7 checkboxes, progress bar, and locking logic for Trade Ideas section until 100% complete",
+      "acceptanceCriteria": [
+        "Card collapses and expands on click",
+        "Progress bar updates as checkboxes are ticked",
+        "Trade Ideas section is blurred and non-interactive until all 7 checkboxes are checked",
+        "Lock overlay displays the specified message",
+        "Checklist state persists to localStorage"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/OperationalChecklist.tsx",
+          "operation": "create",
+          "description": "Create collapsible card component (open by default) with 7 checkboxes: (1) EDIS completed, (2) No-delivery period check, (3) Margin buffer >20% with input field, (4) Max daily loss confirmed, (5) Position size caps reviewed, (6) Pre-defined entry/stop/size, (7) Bias self-check. Display progress bar showing completion (0/7 to 7/7). Persist state to TradingContext. Export completion status for other components."
+        },
+        {
+          "path": "frontend/src/components/ChecklistProgress.tsx",
+          "operation": "create",
+          "description": "Create progress bar component that displays checklist completion percentage (0/7 to 7/7) with visual fill animation. Use amber accent color for completed portion."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Build the 12-Signal Catalyst Engine section with reusable SignalCard components sorted by priority with inline data entry forms",
+      "acceptanceCriteria": [
+        "All 12 signal cards render with correct names and descriptions",
+        "Status can be toggled between ACTIVE, WATCH, and CLEAR",
+        "Add Data form saves ticker, date, qty, and notes to localStorage",
+        "Cards sort automatically by priority (RED first)",
+        "Signal Summary Bar counts update when statuses change"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/SignalCatalystEngine.tsx",
+          "operation": "create",
+          "description": "Create section component that renders SignalSummaryBar and a grid of 12 SignalCard components. Sort cards by status priority (RED first, then ORANGE/YELLOW, then CLEAR). Define all 12 signals: S1-SEBON Approval, S2-IPO Pipeline, S3-New Listing, S4-Book-Close, S5-Price Adjustment, S6-Lock-in Supply Shock, S7-Promoter Overhang, S8-Auction/Tender, S9-Earnings Surprise, S10-EDIS Reminder, S11-Momentum/Liquidity, S12-Volatility Regime."
+        },
+        {
+          "path": "frontend/src/components/SignalCard.tsx",
+          "operation": "create",
+          "description": "Create reusable card component displaying signal number, name, status toggle (ACTIVE/WATCH/CLEAR with emoji), last updated timestamp, and '+ Add Data' button. Button opens inline mini-form with fields for ticker, date, qty, notes. Persist all data to TradingContext signals array."
+        },
+        {
+          "path": "frontend/src/components/SignalSummaryBar.tsx",
+          "operation": "create",
+          "description": "Create summary bar component that displays counts of active signals by category (Risk / Opportunity / Neutral). Compute counts from signal status values in TradingContext. Update automatically when signals change."
+        }
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "summary": "Build the Trade Idea Builder section with 8 color-coded PlaybookCard components gated behind checklist completion",
+      "acceptanceCriteria": [
+        "All 8 playbook cards render with correct names, timeframes, and color coding",
+        "Section is blurred and locked until checklist is 100% complete",
+        "Each card contains the embedded trade calculator",
+        "Playbook details (rationale, entry/exit rules) are visible on each card"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/TradeIdeaBuilder.tsx",
+          "operation": "create",
+          "description": "Create section component that renders 8 PlaybookCard components. Apply blur overlay with lock icon and message 'Complete your operational checklist first' when checklist completion from TradingContext is < 100%. Define all 8 playbooks with metadata: names, timeframes, sources, rationales, entry/exit rules, and category colors (amber=event-driven, blue=momentum, purple=intraday)."
+        },
+        {
+          "path": "frontend/src/components/PlaybookCard.tsx",
+          "operation": "create",
+          "description": "Create playbook card component displaying strategy name, timeframe badge, source badge, one-line rationale, entry rule, exit rule, and embedded TradeCalculator component. Apply color coding based on category prop (amber/blue/purple). Use dark terminal card styling with borders."
+        }
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "summary": "Build the TradeCalculator component with exact position sizing logic, liquidity warnings, and Add to Trade Log functionality",
+      "acceptanceCriteria": [
+        "All calculations match the specified formulas exactly",
+        "Liquidity warning appears when daysToExit > 3",
+        "Zero-share result shows the specified error message instead of 0",
+        "Account equity auto-populates from the navbar input",
+        "Add to Trade Log button creates a new entry in the trade log"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/TradeCalculator.tsx",
+          "operation": "create",
+          "description": "Create calculator component with input fields: Ticker, Entry Price, Stop Price, Account Equity (auto-populated from TradingContext), Risk % dropdown (0.5%/1.0%), Avg Daily Turnover 20d. Implement exact position sizing formulas: positionShares = floor((equity * risk%) / (entry - stop)); liquidityCap = turnover * 0.10; liquidityCapShares = floor(liquidityCap / entry); effectiveShares = min(positionShares, liquidityCapShares); breakevenPct = fee (default 0.6%); rValue = equity * risk%; daysToExit = (effectiveShares * entry) / turnover. Display outputs and warnings. Show error message if effectiveShares = 0. Include '💾 Add to Trade Log' button that adds entry to TradingContext openTrades."
+        },
+        {
+          "path": "frontend/src/utils/positionSizing.ts",
+          "operation": "create",
+          "description": "Create utility functions implementing exact position sizing calculations with all formulas specified in REQ-7. Export functions: calculatePositionSize, calculateLiquidityCap, calculateDaysToExit, calculateBreakevenMove. Ensure Math.floor is used for share calculations."
+        }
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "summary": "Build the Active Trade Log section as a CRUD table with color-coded P&L rows, summary bar, and -2R daily loss locking",
+      "acceptanceCriteria": [
+        "Table renders all specified columns",
+        "Rows are color-coded green/red based on P&L",
+        "Table is sorted by P&L ascending",
+        "Close Trade dialog accepts exit price and computes net P&L after fees",
+        "Days Held increments correctly from entry date",
+        "Summary bar updates in real time from trade data",
+        "Trade Ideas section locks with specified message when -2R daily loss is hit"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/ActiveTradeLog.tsx",
+          "operation": "create",
+          "description": "Create CRUD table component with columns: Ticker, Playbook, Entry Price, Stop Price, Size, Entry Date, Current Price (manual input), Current P&L (NPR), Current P&L (R-multiple), Days Held (auto-computed from entry date), Status, Actions (Edit/Close/Flag EDIS). Apply green row color if P&L > 0, red if < 0. Sort by P&L ascending. Display summary bar below showing: Open Trades count, Today's Realized P&L (NPR and R), Max Daily Loss Remaining (R), Daily Loss Limit usage %. Read from and update TradingContext openTrades/closedTrades arrays."
+        },
+        {
+          "path": "frontend/src/components/CloseTradeDialog.tsx",
+          "operation": "create",
+          "description": "Create modal dialog component that accepts exit price input and computes net P&L after deducting configurable fee (default 0.6%) from TradingContext settings. Move trade from openTrades to closedTrades array with computed final P&L. Use shadcn/ui Dialog component."
+        },
+        {
+          "path": "frontend/src/components/TradeSummaryBar.tsx",
+          "operation": "create",
+          "description": "Create summary bar component computing real-time metrics from TradingContext: open trades count, today's realized P&L in NPR and R-multiple, max daily loss remaining in R, and daily loss limit usage percentage. Display warning when approaching -2R."
+        }
+      ]
+    },
+    {
+      "id": "REQ-9",
+      "summary": "Build the Journal Metrics Dashboard with auto-computed metric cards, P&L equity curve chart, and playbook performance table",
+      "acceptanceCriteria": [
+        "All 12 metric cards render with correct labels",
+        "Computed metrics (win rate, avg holding days, P&L per trade, avg win/loss, max drawdown) calculate correctly from trade log",
+        "Manual-input metrics save to localStorage",
+        "Equity curve chart renders cumulative P&L with dual Y-axes (NPR and R-multiple)",
+        "Playbook performance table aggregates correctly from closed trades"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/JournalMetrics.tsx",
+          "operation": "create",
+          "description": "Create dashboard section with 3-column grid of 12 metric cards: (1) Portfolio Turnover, (2) Avg Holding Days, (3) Net P&L per Trade, (4) Chase Rate, (5) Plan Adherence Score (manual), (6) EDIS Delay Days (manual), (7) Win Rate, (8) Avg Win/Loss Ratio, (9) Max Drawdown, (10) Closeout Incidents (manual), (11) Mistimed Corporate Action Trades (manual), (12) Forced Sell Events (manual). Compute metrics from TradingContext closedTrades. Below cards, render PLEquityCurve chart and PlaybookPerformanceTable components."
+        },
+        {
+          "path": "frontend/src/components/MetricCard.tsx",
+          "operation": "create",
+          "description": "Create reusable metric card component displaying label, value, optional manual input field, and visual styling. Support both auto-computed and manual metrics. Persist manual values to TradingContext."
+        },
+        {
+          "path": "frontend/src/components/PLEquityCurve.tsx",
+          "operation": "create",
+          "description": "Create Recharts line chart component displaying cumulative P&L in NPR over time with R-multiple on secondary Y-axis. Compute cumulative values from TradingContext closedTrades sorted by exit date. Apply dark terminal chart styling with amber line."
+        },
+        {
+          "path": "frontend/src/components/PlaybookPerformanceTable.tsx",
+          "operation": "create",
+          "description": "Create table component with columns: Playbook Name, Trades, Win Rate, Avg R, Best Trade, Worst Trade. Aggregate data from TradingContext closedTrades grouped by playbook. Calculate metrics per playbook."
+        },
+        {
+          "path": "frontend/src/utils/metrics.ts",
+          "operation": "create",
+          "description": "Create utility functions for computing all auto-calculated metrics: calculateWinRate, calculateAvgHoldingDays, calculateNetPnLPerTrade, calculateChaseRate, calculateAvgWinLoss, calculateMaxDrawdown. Accept closedTrades array and return computed values."
+        }
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "summary": "Build the Behavioral Bias Daily Audit with 5 Yes/No/Unsure questions, warnings, plan adherence slider, and soft-lock for trade calculator",
+      "acceptanceCriteria": [
+        "All 5 questions render with Yes/No/Unsure toggles",
+        "Correct warning messages appear for flagged answers",
+        "Bias status chip updates based on current answers",
+        "Plan adherence slider value saves per calendar day to localStorage",
+        "Trade calculator shows soft-lock until audit is completed for the current day"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/BiasAudit.tsx",
+          "operation": "create",
+          "description": "Create daily audit section with 5 Yes/No/Unsure toggle questions: (Q1) chasing stock 3+ consecutive days → HERDING TRAP warning if YES; (Q2) holding loser past stop → LOSS AVERSION + DISPOSITION EFFECT if YES; (Q3) overconfident after 3+ wins → OVERCONFIDENCE BIAS with 50% size reduction instruction if YES; (Q4) pre-defined entry/stop/size → 'DO NOT TRADE TODAY' block if NO; (Q5) chase rate >15% → reduce frequency warning if YES. Display Plan Adherence Score slider (0–5) auto-saved per day. Show 'BIAS STATUS: LOW RISK ✅' or 'ELEVATED ⚠️' chip at top. Store answers in TradingContext biasAuditAnswers keyed by date."
+        },
+        {
+          "path": "frontend/src/components/BiasWarning.tsx",
+          "operation": "create",
+          "description": "Create warning component that displays appropriate bias warning message based on flagged question answer. Support all 5 warning types with correct styling (red for critical blocks, orange for cautions)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-11",
+      "summary": "Build the Quick Links Panel with two groups of external links and manually-updated Last Checked timestamps",
+      "acceptanceCriteria": [
+        "All 10 links render with correct labels and open in new tabs",
+        "Each link has a ✓ button that stamps the current Nepal time as 'Last Checked'",
+        "Last checked timestamps persist to localStorage",
+        "Links are grouped into Official Sources and Aggregators"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/QuickLinksPanel.tsx",
+          "operation": "create",
+          "description": "Create sidebar or bottom bar component with two groups of external links opening in new tabs. Official Sources: SEBON IPO Approved (sebon.gov.np), CDSC Lock-in Notices (cdsc.com.np), CDSC Settlement Procedure, CDSC EDIS Directive. Aggregators: Merolagani Announcements/Quarterly Reports/Top Turnovers, Sharesansar Share Listed/Dividend-Bonus-Rights/Top Turnovers. Each link shows 'Last Checked' timestamp with ✓ button to update timestamp to current Nepal time. Store timestamps in TradingContext quickLinksLastChecked object."
+        }
+      ]
+    },
+    {
+      "id": "REQ-12",
+      "summary": "Build the Weekly Review Module with auto-generated summary, rule-based recommendations, and PDF export functionality",
+      "acceptanceCriteria": [
+        "Module auto-displays on Sundays in Nepal time",
+        "Manual trigger button works on any day",
+        "All 7 metrics compute correctly from stored data",
+        "Recommendation text is rule-based and cites a metric (never uses 'feel' or 'looks good')",
+        "PDF export button triggers a printable view of the weekly report"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/WeeklyReview.tsx",
+          "operation": "create",
+          "description": "Create module that auto-displays on Sundays (Nepal time) or via manual trigger button. Generate summary from TradingContext data showing: Hit Rate (target >50%), Avg Win/Avg Loss (target >1.5), Max Drawdown (NPR and R), Rule Adherence % (target >80%), EDIS Errors (target 0), Chase Rate % (target <15%), Plan Adherence Avg Score (target ≥4), Best and Worst Playbook with avg R. Display auto-generated text recommendations using rule-based conditions: win rate <40% → reduce to 1 trade/day; chase rate >20% → 24-hour waiting rule; EDIS errors >0 → no-sell-without-EDIS-slot rule; plan adherence <3 → paper trade only; all good → scale R by 0.1%. Include '📥 Export Weekly Report as PDF' button using window.print() with print-friendly CSS."
+        },
+        {
+          "path": "frontend/src/utils/weeklyRecommendations.ts",
+          "operation": "create",
+          "description": "Create utility functions for generating rule-based recommendation text. Each function checks a specific metric threshold and returns appropriate recommendation text citing the metric. Ensure no subjective language ('feel', 'looks good') is used."
+        }
+      ]
+    },
+    {
+      "id": "REQ-13",
+      "summary": "Build the Portfolio Allocation Gauge with Recharts donut chart and rebalancing warnings based on target allocations",
+      "acceptanceCriteria": [
+        "Donut chart renders with three segments for each category",
+        "Percentages compute from actual open trade data by playbook type",
+        "Rebalancing warning appears when a category exceeds its target by a meaningful margin",
+        "Target allocations are displayed alongside current allocations"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/PortfolioAllocationGauge.tsx",
+          "operation": "create",
+          "description": "Create section with Recharts donut chart showing current allocation by playbook category vs targets: 50% Event/Swing, 30% Momentum, 20% IPO/New Listing. Compute current percentages from TradingContext openTrades tagged by playbook category. Display rebalancing warning if any category deviates significantly (e.g., 'You are overweight Momentum (42%). Reduce momentum trades until next event-driven setup.')."
+        },
+        {
+          "path": "frontend/src/utils/allocation.ts",
+          "operation": "create",
+          "description": "Create utility functions to compute current portfolio allocation by category from openTrades array and compare against target allocations. Export functions: calculateCategoryAllocation, getRebalancingWarnings."
+        }
+      ]
+    },
+    {
+      "id": "REQ-14",
+      "summary": "Apply the Bloomberg-meets-Himalayan-night-sky dark terminal visual theme consistently with responsive layouts and market-closed dimming",
+      "acceptanceCriteria": [
+        "All specified hex colors are applied via Tailwind config",
+        "Monospace font is used for all numbers, data fields, and headers",
+        "Responsive grid layouts work at all three breakpoints",
+        "Thin amber top border is visible across the full page width",
+        "Scanline texture overlay is visible on the background",
+        "Alert pulse and card slide-in animations function correctly",
+        "Dashboard dims to 70% with Planning Mode banner when market is closed"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/tailwind.config.js",
+          "operation": "modify",
+          "description": "Configure custom theme colors: background #0A0E1A, surface #111827, border #1E293B, primary/accent #F59E0B (amber), success #10B981, danger #EF4444, muted #6B7280, highlight #3B82F6. Add custom font families: JetBrains Mono or IBM Plex Mono for display/headers/numeric fields, Inter for body text. Configure responsive breakpoints: mobile <768px, tablet 768-1279px, desktop ≥1280px."
+        },
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Apply global dark terminal styling: set background to #0A0E1A, add thin amber (#F59E0B) top border across entire page, apply subtle scanline texture overlay using the generated scanline-bg.dim_800x600.png image from frontend/public/assets/generated/scanline-bg.dim_800x600.png as a repeating background. Define CSS animations: pulse for alerts, slide-in for cards. Add print styles for PDF export."
+        },
+        {
+          "path": "frontend/src/components/MarketClosedOverlay.tsx",
+          "operation": "create",
+          "description": "Create overlay component that dims entire dashboard to 70% opacity and displays 'MARKET CLOSED — Planning Mode' banner when NEPSE market is closed. Check market status from nepalTime utility. Apply conditional opacity to main dashboard container."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Wrap application with TradingContext provider. Import and render Navbar at top. Below Navbar render RiskAlertBanner, then main dashboard container with responsive 3-column grid (desktop), 2-column (tablet), 1-column (mobile) containing all dashboard sections: OperationalChecklist, SignalCatalystEngine, TradeIdeaBuilder, ActiveTradeLog, JournalMetrics, BiasAudit, QuickLinksPanel, WeeklyReview, PortfolioAllocationGauge. Render MarketClosedOverlay conditionally. Apply conditional blur/lock overlay to TradeIdeaBuilder when checklist incomplete or daily loss reaches -2R."
+        }
+      ]
+    }
+  ]
+}
